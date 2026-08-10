@@ -7,9 +7,15 @@ const config = require('./src/config/env');
 const server = http.createServer(app);
 
 // Initialize Socket.IO
+const allowedOrigins = [
+  config.clientUrl,
+  'https://auto-pair.vercel.app',
+  'http://localhost:5173',
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: config.clientUrl,
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true,
   },

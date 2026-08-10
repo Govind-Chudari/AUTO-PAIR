@@ -27,9 +27,21 @@ const app = express();
 app.use(helmet());
 
 // CORS
+const allowedOrigins = [
+  config.clientUrl,
+  'https://auto-pair.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.startsWith(o))) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
