@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*
+!.env.example
+**/.env
+**/.env.local
+**/.env.development
+**/.env.test
+**/.env.production
+**/.env.*
+!**/.env.example
+
+# Production & Build Outputs
+dist/
+**/dist/
+build/
+**/build/
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Database & Local Storage
+*.sqlite
+*.sqlite-journal
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary & Upload Directories
+uploads/
+**/uploads/
+tmp/
+**/tmp/
+temp/
+**/temp/

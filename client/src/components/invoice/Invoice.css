@@ -1,0 +1,57 @@
+/* ─── INVOICE STYLES ─────────────────────────── */
+.invoice-card {
+  margin-top: 24px;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-200);
+  text-align: left;
+}
+
+.invoice-table th {
+  background: var(--gray-50);
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.warranty-tag {
+  display: block;
+  font-size: 11px;
+  color: var(--success-600);
+}
+
+.invoice-breakdown {
+  max-width: 320px;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.payment-actions-box {
+  background: var(--gray-50);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--gray-300);
+}
+
+.payment-actions-box h4 {
+  margin-bottom: 12px;
+}
+
+.invoice-summary-box {
+  background: var(--primary-50);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--primary-200);
+}

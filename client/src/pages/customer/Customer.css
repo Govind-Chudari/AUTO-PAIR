@@ -1,0 +1,255 @@
+/* ─── CUSTOMER STYLES ────────────────────────── */
+.welcome-banner {
+  background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+  color: white;
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.welcome-banner h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.welcome-banner p {
+  color: var(--gray-300);
+  font-size: 15px;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.dash-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.dash-stat-card {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-blue { background: var(--primary-100); color: var(--primary-600); }
+.icon-orange { background: var(--accent-100); color: var(--accent-600); }
+.icon-green { background: var(--success-50); color: var(--success-600); }
+
+.dash-stat-num {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.dash-stat-label {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.repair-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.repair-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  transition: background var(--transition-fast);
+}
+
+.repair-item:hover {
+  background: var(--gray-100);
+}
+
+.repair-item-title {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.repair-item-sub {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.vehicle-mini-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vehicle-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+}
+
+.v-icon {
+  font-size: 24px;
+}
+
+.vehicle-card {
+  padding: 20px;
+}
+
+.v-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.v-card-icon {
+  font-size: 32px;
+}
+
+.reg-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--gray-900);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+  font-weight: 700;
+  margin: 8px 0 14px;
+  font-size: 13px;
+}
+
+.v-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.margin-bottom-24 { margin-bottom: 24px; }
+.margin-bottom-16 { margin-bottom: 16px; }
+.margin-top-24 { margin-top: 24px; }
+.text-gray-500 { color: var(--gray-500); }
+.text-gray-600 { color: var(--gray-600); }
+.text-danger { color: var(--danger-500); }
+.text-right { text-align: right; }
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--gray-200);
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-node {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--primary-600);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-title {
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.timeline-desc {
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+
+.modal-card {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+@media (max-width: 992px) {
+  .dash-grid, .dash-grid-3, .dash-two-col {
+    grid-template-columns: 1fr;
+  }
+  .welcome-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

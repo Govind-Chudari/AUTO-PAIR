@@ -1,0 +1,466 @@
+// ============================================
+// AUTO-PAIR — Prisma Schema
+// Vehicle Repair Marketplace Platform
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────
+
+enum UserRole {
+  customer
+  shop_owner
+  admin
+}
+
+enum VehicleType {
+  scooty
+  bike
+  car
+  auto_rickshaw
+  truck
+  other
+}
+
+enum FuelType {
+  petrol
+  diesel
+  electric
+  cng
+}
+
+enum RepairStatus {
+  pending
+  accepted
+  pickup_assigned
+  picked_up
+  diagnosing
+  repair_in_progress
+  testing
+  ready_for_delivery
+  out_for_delivery
+  delivered
+  completed
+  cancelled
+  rejected
+  on_hold
+}
+
+enum Urgency {
+  low
+  medium
+  high
+  emergency
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  partial
+  refunded
+}
+
+enum PaymentMethod {
+  cash
+  online
+  upi
+}
+
+enum InvoiceItemType {
+  part
+  labour
+  service
+  pickup_delivery
+  other
+}
+
+enum ShopMemberRole {
+  mechanic
+  delivery_agent
+  manager
+}
+
+enum PhotoType {
+  before
+  during
+  after
+  bill
+  damage
+}
+
+enum NotificationType {
+  repair_update
+  new_query
+  payment
+  chat
+  system
+}
+
+enum EmergencyStatus {
+  active
+  responded
+  resolved
+  expired
+}
+
+// ─── MODELS ──────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid())
+  fullName      String   @map("full_name")
+  email         String   @unique
+  phone         String   @unique
+  passwordHash  String   @map("password_hash")
+  avatarUrl     String?  @map("avatar_url")
+  role          UserRole @default(customer)
+  isVerified    Boolean  @default(false) @map("is_verified")
+  isActive      Boolean  @default(true) @map("is_active")
+  address       String?
+  latitude      Decimal? @db.Decimal(10, 8)
+  longitude     Decimal? @db.Decimal(11, 8)
+  fcmToken      String?  @map("fcm_token")
+  refreshToken  String?  @map("refresh_token")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  vehicles            Vehicle[]
+  shops               Shop[]
+  repairRequests       RepairRequest[]   @relation("CustomerRepairs")
+  reviews              Review[]
+  notifications        Notification[]
+  chatMessages         ChatMessage[]
+  trackingUpdates      RepairTracking[]
+  repairPhotos         RepairPhoto[]
+  shopMemberships      ShopMember[]
+  emergencyRequests    EmergencyRequest[]
+
+  @@map("users")
+}
+
+model Shop {
+  id              String   @id @default(uuid())
+  ownerId         String   @map("owner_id")
+  shopName        String   @map("shop_name")
+  description     String?
+  address         String
+  city            String
+  state           String
+  pincode         String
+  latitude        Decimal  @db.Decimal(10, 8)
+  longitude       Decimal  @db.Decimal(11, 8)
+  phone           String
+  email           String?
+  logoUrl         String?  @map("logo_url")
+  coverPhotoUrl   String?  @map("cover_photo_url")
+  openingTime     String   @map("opening_time")
+  closingTime     String   @map("closing_time")
+  workingDays     String   @map("working_days") // e.g., "Mon-Sat"
+  isVerified      Boolean  @default(false) @map("is_verified")
+  isActive        Boolean  @default(true) @map("is_active")
+  avgRating       Decimal  @default(0.0) @map("avg_rating") @db.Decimal(2, 1)
+  totalReviews    Int      @default(0) @map("total_reviews")
+  totalRepairs    Int      @default(0) @map("total_repairs")
+  acceptsPickup   Boolean  @default(true) @map("accepts_pickup")
+  serviceRadiusKm Int      @default(10) @map("service_radius_km")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos           ShopPhoto[]
+  services         ShopService[]
+  members          ShopMember[]
+  repairRequests   RepairRequest[]
+  reviews          Review[]
+  invoices         Invoice[]
+  emergencyResponses EmergencyRequest[]
+
+  @@map("shops")
+}
+
+model ShopPhoto {
+  id           String   @id @default(uuid())
+  shopId       String   @map("shop_id")
+  photoUrl     String   @map("photo_url")
+  caption      String?
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@map("shop_photos")
+}
+
+model ShopMember {
+  id        String         @id @default(uuid())
+  shopId    String         @map("shop_id")
+  userId    String?        @map("user_id")
+  name      String
+  role      ShopMemberRole
+  phone     String?
+  isActive  Boolean        @default(true) @map("is_active")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  shop Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("shop_members")
+}
+
+model ServiceCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  iconUrl     String? @map("icon_url")
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Relations
+  shopServices   ShopService[]
+  repairRequests RepairRequest[]
+
+  @@map("service_categories")
+}
+
+model ShopService {
+  id          String  @id @default(uuid())
+  shopId      String  @map("shop_id")
+  categoryId  String  @map("category_id")
+  basePrice   Decimal? @map("base_price") @db.Decimal(10, 2)
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Relations
+  shop     Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, categoryId])
+  @@map("shop_services")
+}
+
+model Vehicle {
+  id                 String      @id @default(uuid())
+  ownerId            String      @map("owner_id")
+  vehicleType        VehicleType @map("vehicle_type")
+  brand              String
+  model              String
+  year               Int?
+  registrationNumber String      @unique @map("registration_number")
+  color              String?
+  fuelType           FuelType?   @map("fuel_type")
+  photoUrl           String?     @map("photo_url")
+  isActive           Boolean     @default(true) @map("is_active")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  repairRequests RepairRequest[]
+  emergencyRequests EmergencyRequest[]
+
+  @@map("vehicles")
+}
+
+model RepairRequest {
+  id                     String       @id @default(uuid())
+  requestNumber          String       @unique @map("request_number")
+  customerId             String       @map("customer_id")
+  vehicleId              String       @map("vehicle_id")
+  shopId                 String?      @map("shop_id")
+  categoryId             String?      @map("category_id")
+  title                  String
+  description            String
+  urgency                Urgency      @default(medium)
+  status                 RepairStatus @default(pending)
+  pickupAddress          String       @map("pickup_address")
+  pickupLatitude         Decimal      @map("pickup_latitude") @db.Decimal(10, 8)
+  pickupLongitude        Decimal      @map("pickup_longitude") @db.Decimal(11, 8)
+  deliveryAddress        String?      @map("delivery_address")
+  estimatedCost          Decimal?     @map("estimated_cost") @db.Decimal(10, 2)
+  finalCost              Decimal?     @map("final_cost") @db.Decimal(10, 2)
+  estimatedDurationHours Int?         @map("estimated_duration_hours")
+  customerNotes          String?      @map("customer_notes")
+  shopNotes              String?      @map("shop_notes")
+  isPaid                 Boolean      @default(false) @map("is_paid")
+  paymentMethod          PaymentMethod? @map("payment_method")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  acceptedAt             DateTime?    @map("accepted_at")
+  completedAt            DateTime?    @map("completed_at")
+  deliveredAt            DateTime?    @map("delivered_at")
+  cancelledAt            DateTime?    @map("cancelled_at")
+  cancellationReason     String?      @map("cancellation_reason")
+
+  // Relations
+  customer       User             @relation("CustomerRepairs", fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  shop           Shop?            @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  category       ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tracking       RepairTracking[]
+  photos         RepairPhoto[]
+  invoice        Invoice?
+  review         Review?
+  chatMessages   ChatMessage[]
+
+  @@index([customerId, status])
+  @@index([shopId, status])
+  @@index([status])
+  @@map("repair_requests")
+}
+
+model RepairTracking {
+  id                       String   @id @default(uuid())
+  requestId                String   @map("request_id")
+  status                   String
+  title                    String
+  description              String?
+  updatedBy                String   @map("updated_by")
+  photoUrl                 String?  @map("photo_url")
+  estimatedMinutesRemaining Int?    @map("estimated_minutes_remaining")
+  createdAt                DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  updater User          @relation(fields: [updatedBy], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt])
+  @@map("repair_tracking")
+}
+
+model RepairPhoto {
+  id         String    @id @default(uuid())
+  requestId  String    @map("request_id")
+  photoUrl   String    @map("photo_url")
+  photoType  PhotoType @map("photo_type")
+  caption    String?
+  uploadedBy String    @map("uploaded_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  request  RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploader User          @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("repair_photos")
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique @map("invoice_number")
+  requestId      String        @unique @map("request_id")
+  shopId         String        @map("shop_id")
+  customerId     String        @map("customer_id")
+  subtotal       Decimal       @db.Decimal(10, 2)
+  taxAmount      Decimal       @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  discountAmount Decimal       @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  totalAmount    Decimal       @map("total_amount") @db.Decimal(10, 2)
+  paymentStatus  PaymentStatus @default(pending) @map("payment_status")
+  paymentMethod  PaymentMethod? @map("payment_method")
+  paidAt         DateTime?     @map("paid_at")
+  notes          String?
+  pdfUrl         String?       @map("pdf_url")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  request RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  shop    Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  items   InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id           String          @id @default(uuid())
+  invoiceId    String          @map("invoice_id")
+  itemType     InvoiceItemType @map("item_type")
+  description  String
+  quantity     Int             @default(1)
+  unitPrice    Decimal         @map("unit_price") @db.Decimal(10, 2)
+  totalPrice   Decimal         @map("total_price") @db.Decimal(10, 2)
+  isNewPart    Boolean         @default(true) @map("is_new_part")
+  warrantyDays Int             @default(0) @map("warranty_days")
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  requestId  String   @unique @map("request_id")
+  customerId String   @map("customer_id")
+  shopId     String   @map("shop_id")
+  rating     Int      // 1-5
+  reviewText String?  @map("review_text")
+  shopReply  String?  @map("shop_reply")
+  isVisible  Boolean  @default(true) @map("is_visible")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request  RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  customer User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shop     Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model ChatMessage {
+  id            String   @id @default(uuid())
+  requestId     String   @map("request_id")
+  senderId      String   @map("sender_id")
+  message       String
+  attachmentUrl String?  @map("attachment_url")
+  isRead        Boolean  @default(false) @map("is_read")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request RepairRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender  User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt])
+  @@map("chat_messages")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String           @map("user_id")
+  title       String
+  body        String
+  type        NotificationType
+  referenceId String?          @map("reference_id")
+  isRead      Boolean          @default(false) @map("is_read")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
+}
+
+model EmergencyRequest {
+  id              String          @id @default(uuid())
+  customerId      String          @map("customer_id")
+  vehicleId       String?         @map("vehicle_id")
+  latitude        Decimal         @db.Decimal(10, 8)
+  longitude       Decimal         @db.Decimal(11, 8)
+  description     String?
+  status          EmergencyStatus @default(active)
+  respondedShopId String?         @map("responded_shop_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  // Relations
+  customer      User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle       Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  respondedShop Shop?    @relation(fields: [respondedShopId], references: [id], onDelete: SetNull)
+
+  @@map("emergency_requests")
+}
