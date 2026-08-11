@@ -7,48 +7,25 @@ import toast from 'react-hot-toast';
 export default function RaiseQuery() {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [formData, setFormData] = useState({
-    vehicleId: '',
-    title: '',
-    description: '',
-    urgency: 'medium',
-    pickupAddress: '',
-    pickupLatitude: 12.9716, // Bangalore default
-    pickupLongitude: 77.5946,
-  });
-
-  useEffect(() => {
-    async function getVehicles() {
-      try {
-        const res = await api.get('/vehicles');
-        setVehicles(res.data.data);
-        if (res.data.data.length > 0) {
-          setFormData((prev) => ({ ...prev, vehicleId: res.data.data[0].id }));
-        }
-      } catch (err) {
-        toast.error('Failed to load vehicles');
-      } finally {
-        setLoading(false);
-      }
-    }
-    getVehicles();
-  }, []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     if (!formData.vehicleId) {
       toast.error('Please select a vehicle or add one first.');
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const res = await api.post('/repairs', formData);
       toast.success('Query raised! Nearby shops have been notified.');
       navigate(`/my-repairs/${res.data.data.id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to raise query.');
+      setIsSubmitting(false);
     }
   };
 
@@ -140,8 +117,16 @@ export default function RaiseQuery() {
                 />
               </div>
 
-              <button type="submit" className="btn btn-accent btn-lg w-full">
-                <Wrench size={20} /> Submit Query to Nearby Shops
+              <button type="submit" className="btn btn-accent btn-lg w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <div className="spinner spinner-sm" /> Submitting Query...
+                  </>
+                ) : (
+                  <>
+                    <Wrench size={20} /> Submit Query to Nearby Shops
+                  </>
+                )}
               </button>
             </form>
           )}

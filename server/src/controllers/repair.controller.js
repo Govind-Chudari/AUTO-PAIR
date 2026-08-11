@@ -24,6 +24,30 @@ const createRepairRequest = asyncHandler(async (req, res) => {
     });
   }
 
+  // Prevent duplicate submission created within the last 5 seconds
+  const recentDuplicate = await prisma.repairRequest.findFirst({
+    where: {
+      customerId: req.user.id,
+      vehicleId,
+      title,
+      createdAt: {
+        gte: new Date(Date.now() - 5000),
+      },
+    },
+    include: {
+      vehicle: true,
+      category: true,
+    },
+  });
+
+  if (recentDuplicate) {
+    return res.status(200).json({
+      success: true,
+      data: recentDuplicate,
+      message: 'Repair query already raised.',
+    });
+  }
+
   const request = await prisma.repairRequest.create({
     data: {
       requestNumber: generateRequestNumber(),

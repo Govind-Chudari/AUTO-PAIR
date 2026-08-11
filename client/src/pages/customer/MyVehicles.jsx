@@ -32,8 +32,13 @@ export default function MyVehicles() {
     fetchVehicles();
   }, []);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await api.post('/vehicles', formData);
       toast.success('Vehicle added successfully!');
@@ -49,6 +54,8 @@ export default function MyVehicles() {
       fetchVehicles();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add vehicle');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -176,8 +183,8 @@ export default function MyVehicles() {
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Save Vehicle
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Vehicle'}
                 </button>
               </div>
             </form>

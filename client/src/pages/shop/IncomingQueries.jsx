@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 export default function IncomingQueries() {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [shopId, setShopId] = useState(null);
+  const [acceptingId, setAcceptingId] = useState(null);
 
   const fetchQueries = async () => {
     try {
@@ -29,7 +29,8 @@ export default function IncomingQueries() {
   }, []);
 
   const handleAccept = async (requestId) => {
-    if (!shopId) return;
+    if (!shopId || acceptingId) return;
+    setAcceptingId(requestId);
     try {
       await api.post(`/repairs/${requestId}/accept`, {
         shopId,
@@ -41,6 +42,8 @@ export default function IncomingQueries() {
       fetchQueries();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to accept query');
+    } finally {
+      setAcceptingId(null);
     }
   };
 
@@ -77,8 +80,20 @@ export default function IncomingQueries() {
                 <div style={{ gridColumn: '1 / -1' }}><strong>Pickup Location:</strong> <MapPin size={14} /> {q.pickupAddress}</div>
               </div>
               <br />
-              <button className="btn btn-accent btn-lg w-full" onClick={() => handleAccept(q.id)}>
-                <CheckCircle2 size={20} /> Accept Query & Pickup Vehicle
+              <button
+                className="btn btn-accent btn-lg w-full"
+                onClick={() => handleAccept(q.id)}
+                disabled={acceptingId === q.id}
+              >
+                {acceptingId === q.id ? (
+                  <>
+                    <div className="spinner spinner-sm" /> Accepting Query...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={20} /> Accept Query & Pickup Vehicle
+                  </>
+                )}
               </button>
             </div>
           ))}

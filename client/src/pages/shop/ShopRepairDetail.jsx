@@ -38,13 +38,16 @@ export default function ShopRepairDetail() {
     fetchDetails();
   }, [id]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
-    if (!title) {
-      toast.error('Please enter a status update title.');
+    if (!title || isSubmitting) {
+      if (!title) toast.error('Please enter a status update title.');
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await api.post(`/tracking/${id}`, {
         status,
@@ -57,6 +60,8 @@ export default function ShopRepairDetail() {
       fetchDetails();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update tracking');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -131,8 +136,16 @@ export default function ShopRepairDetail() {
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary w-full">
-                <Plus size={18} /> Push Status Update to Customer Timeline
+              <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <div className="spinner spinner-sm" /> Posting Update...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={18} /> Push Status Update to Customer Timeline
+                  </>
+                )}
               </button>
             </form>
           </div>
